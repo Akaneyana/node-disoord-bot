@@ -1,6 +1,5 @@
 require('dotenv').config();
-
-const axios = require('axios');
+const fs = require('fs');
 const { Client, GatewayIntentBits } = require('discord.js');
 
 // Create a new Discord client instance
@@ -12,25 +11,62 @@ const client = new Client({
     ]
 });
 
-// When the client is ready, run this code
+// Load prefixes from JSON file (or start fresh)
+let prefixes = {};
+if (fs.existsSync('./prefixes.json')) {
+    const data = fs.readFileSync('./prefixes.json', 'utf8');
+    try {
+        prefixes = JSON.parse(data);
+        console.log("✅ Prefixes loaded:", prefixes);
+    } catch (err) {
+        console.error("❌ Error parsing prefixes.json:", err);
+    }
+}
+
+// Always use only clientReady
 client.once('clientReady', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-// Listen for messages
 client.on('messageCreate', message => {
-    if (message.content === '!ping') {
-        message.reply('Pong!');
+    if (message.author.bot || !message.guild) return;
+
+/*     // respond to "hi" without prefix
+    const raw = message.content.trim().toLowerCase();
+    if (raw === 'hi') {
+        return message.reply('Hallo o/');
+    } */
+
+    const guildId = message.guild.id;
+    const prefix = prefixes[guildId] || '!'; // default prefix = '!'
+
+    if (!message.content.startsWith(prefix)) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'ping') {
+        return message.reply('Pong!');
+    }
+
+    if (command === 'setprefix') {
+        if (!args[0]) {
+            return message.reply(`Current prefix is: \`${prefix}\``);
+        }
+
+        // Update prefix for this guild
+        prefixes[guildId] = args[0];
+
+        // Save to JSON file
+        try {
+            fs.writeFileSync('./prefixes.json', JSON.stringify(prefixes, null, 2));
+            console.log(`✅ Saved new prefix for ${guildId}: ${args[0]}`);
+        } catch (err) {
+            console.error("❌ Error writing prefixes.json:", err);
+        }
+
+        return message.reply(`Prefix successfully changed to: \`${args[0]}\``);
     }
 });
 
-client.on('interactionCreate', (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
-
-    if (interaction.commandName === 'hey') {
-        interaction.reply('Hey there!');
-    }
-});
-
-// Login to Discord with your bot token
 client.login(process.env.DISCORD_TOKEN);
