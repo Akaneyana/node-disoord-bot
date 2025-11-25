@@ -38,7 +38,7 @@ client.on('messageCreate', message => {
     } */
 
     const guildId = message.guild.id;
-    const prefix = prefixes[guildId] || '!'; // default prefix = '!'
+    const prefix = prefixes[guildId]?.prefix || '!'; // default prefix = '!'
 
     if (!message.content.startsWith(prefix)) return;
 
@@ -54,19 +54,23 @@ client.on('messageCreate', message => {
             return message.reply(`Current prefix is: \`${prefix}\``);
         }
 
-        // Update prefix for this guild
-        prefixes[guildId] = args[0];
+        // Update or create entry for this guild
+        prefixes[guildId] = {
+            prefix: args[0],
+            name: message.guild.name
+        };
 
         // Save to JSON file
         try {
             fs.writeFileSync('./prefixes.json', JSON.stringify(prefixes, null, 2));
-            console.log(`✅ Saved new prefix for ${guildId}: ${args[0]}`);
+            console.log(`✅ Saved new prefix for ${guildId}: ${args[0]} (${message.guild.name})`);
         } catch (err) {
             console.error("❌ Error writing prefixes.json:", err);
         }
 
         return message.reply(`Prefix successfully changed to: \`${args[0]}\``);
-    }
+}
+
 });
 
 client.login(process.env.DISCORD_TOKEN);
