@@ -23,20 +23,20 @@ if (fs.existsSync('./prefixes.json')) {
     }
 }
 
-// Always use only clientReady
-client.once('clientReady', () => {
+// Correct event: "ready" (NOT clientReady)
+client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('messageCreate', message => {
+client.on('messageCreate', message => { // Prefix Commands
     if (message.author.bot || !message.guild) return;
 
-/*     // respond to "hi" without prefix
-    const raw = message.content.trim().toLowerCase();
+    // respond to "hi" without prefix
+/*      const raw = message.content.trim().toLowerCase();
     if (raw === 'hi') {
         return message.reply('Hallo o/');
     } */
-
+ 
     const guildId = message.guild.id;
     const prefix = prefixes[guildId]?.prefix || '!'; // default prefix = '!'
 
@@ -46,7 +46,12 @@ client.on('messageCreate', message => {
     const command = args.shift().toLowerCase();
 
     if (command === 'ping') {
-        return message.reply('Pong!');
+        const sent = Date.now(); // time when bot STARTS processing
+
+        return message.reply('Pong!').then(msg => {
+            const latency = msg.createdTimestamp - message.createdTimestamp; // message roundtrip
+
+            msg.edit(`Pong! (**${latency}ms**)`);});
     }
 
     if (command === 'setprefix') {
@@ -69,8 +74,38 @@ client.on('messageCreate', message => {
         }
 
         return message.reply(`Prefix successfully changed to: \`${args[0]}\``);
-}
-
+    }
 });
+
+// Slash Commands
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+
+    if (interaction.commandName === 'ping') {
+        const start = Date.now();
+        const reply = await interaction.reply({ content: 'Pong!', fetchReply: true });
+        const latency = reply.createdTimestamp - start;
+        await interaction.editReply(`Pong! (**${latency}ms**)`);
+    }
+
+    if (interaction.commandName === 'setprefix') {
+        const newPrefix = interaction.options.getString('prefix');
+        const guildId = interaction.guild.id;
+        prefixes[guildId] = {
+            prefix: newPrefix,
+            name: interaction.guild.name
+        };
+        // Save to JSON file
+        try {
+            fs.writeFileSync('./prefixes.json', JSON.stringify(prefixes, null, 2));
+            console.log(`✅ Saved new prefix for ${guildId}: ${newPrefix} (${interaction.guild.name})`);
+        } catch (err) {
+            console.error("❌ Error writing prefixes.json:", err);
+        }
+        return interaction.reply(`Prefix successfully changed to: \`${newPrefix}\``);
+    }
+});
+
+
 
 client.login(process.env.DISCORD_TOKEN);
