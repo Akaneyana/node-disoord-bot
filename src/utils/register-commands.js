@@ -1,5 +1,6 @@
-require('dotenv').config();
-const {REST, Routes, ApplicationCommandOptionType} = require('discord.js');
+import dotenv from 'dotenv';
+
+import { REST, Routes, ApplicationCommandOptionType } from 'discord.js';
 
 const commands = [
   {
@@ -20,19 +21,20 @@ const commands = [
   },
 ];
 
-const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
+dotenv.config();
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
-  try{
+  try {
     console.log('Started refreshing application (/) commands.....');
 
     await rest.put(
       Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-      {body: commands},
+      { body: commands },
     )
 
     console.log('Successfully registered Slash (/) commands!');
-  }catch (error){
+  } catch (error) {
     console.log(`There was an error: ${error}`);
   }
 })();
