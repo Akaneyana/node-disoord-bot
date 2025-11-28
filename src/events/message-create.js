@@ -14,10 +14,10 @@ export async function messageCreate(message) {
 
     if (command === 'ping') {
         const sent = Date.now()
-        return message.reply('Pong!').then(msg => {
-            const latency = msg.createdTimestamp - message.createdTimestamp
-            msg.edit(`Pong! (**${latency}ms**) | Bot latency: **${Date.now() - sent}ms**`)
-        })
+        const reply = await message.reply('Pong!')
+        const latency = reply.createdTimestamp - message.createdTimestamp
+        await reply.edit(`Pong! (**${latency}ms**) | Bot latency: **${Date.now() - sent}ms**`)
+        return
     }
 
     if (command === 'setprefix') {
