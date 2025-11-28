@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "using this to learn node.js",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "register-commands": "node src/utils/register-commands.js"
   },
   "repository": {
     "type": "git",

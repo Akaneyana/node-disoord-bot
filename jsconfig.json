@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "esnext",
+    "moduleResolution": "nodenext",
+    "checkJs": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+    }
+  },
+  "include": [
+    "src",
+    "generated"
+  ],
+  "typeAcquisition": {
+    "enable": true
+  }
+}

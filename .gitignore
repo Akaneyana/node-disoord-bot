@@ -4,4 +4,7 @@ node_modules/
 
 test/
 
-prefixes.json
+generated/prefixes.json
+
+package-lock.json
+bun.lock
